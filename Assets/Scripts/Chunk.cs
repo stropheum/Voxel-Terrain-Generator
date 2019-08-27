@@ -35,8 +35,7 @@ public class Chunk : MonoBehaviour
 
     private void Start()
     {
-//        gameObject.hideFlags |= HideFlags.HideInHierarchy;
-//        GetComponent<MeshRenderer>().material.mainTexture = Context.AtlasData.Texture;
+        gameObject.hideFlags |= HideFlags.HideInHierarchy;
     }
 
     private void OnDrawGizmos()
