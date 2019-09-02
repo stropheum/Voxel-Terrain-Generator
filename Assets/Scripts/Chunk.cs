@@ -3,13 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[RequireComponent(
+    typeof(MeshFilter), 
+    typeof(MeshRenderer), 
+    typeof(MeshCollider))]
 public class Chunk : MonoBehaviour
 {
     public static int Width => 24;
     public static int Height => 8;
     public static int Depth => 24;
-    public VoxelRender Context { get; set; } = null;
+    public VoxelTerrain Context { get; set; } = null;
     public Vector3Int Offset { get; set; } = Vector3Int.zero;
     
     private static Dictionary<Direction, Vector3> NormalMap { get; } = new Dictionary<Direction, Vector3>
@@ -27,20 +30,17 @@ public class Chunk : MonoBehaviour
     private List<Vector3> normals;
     private List<Vector2> uv;
     private List<int> triangles;
+    private MeshCollider meshCollider;
 
     private void Awake()
     {
         mesh = GetComponent<MeshFilter>().mesh;
+        meshCollider = GetComponent<MeshCollider>();
     }
 
     private void Start()
     {
         gameObject.hideFlags |= HideFlags.HideInHierarchy;
-    }
-
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireSphere(transform.position, 50.0f);
     }
 
     public IEnumerator GenerateVoxelMesh(VoxelData data)
@@ -152,6 +152,9 @@ public class Chunk : MonoBehaviour
         mesh.RecalculateBounds();
         mesh.RecalculateTangents();
         mesh.Optimize();
+
+        meshCollider.sharedMesh = mesh;
+        meshCollider.sharedMesh.MarkDynamic();
     }
 
 }

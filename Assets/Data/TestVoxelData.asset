@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2a221734ce4f334c8a3c8bd5637a4d4, type: 3}
   m_Name: TestVoxelData
   m_EditorClassIdentifier: 
-  chunkDimensions: {x: 15, y: 2, z: 150}
+  chunkDimensions: {x: 25, y: 2, z: 25}
   noiseZoom: 40
