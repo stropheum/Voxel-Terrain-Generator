@@ -11,6 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float jumpPower = 10.0f;
     private Rigidbody rigidBody;
     private bool jumping = false;
+    private bool boostersActive = false;
 
     private void Awake()
     {
@@ -33,16 +34,32 @@ public class PlayerController : MonoBehaviour
         {
             jumping = true;
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            boostersActive = !boostersActive;
+        }
     }
 
     private void FixedUpdate()
     {
         var translation = Input.GetAxis("Horizontal") * speed * transform.right +
                           Input.GetAxis("Vertical") * speed * transform.forward;
-        rigidBody.velocity = new Vector3(
-            translation.x,
-            rigidBody.velocity.y,
-            translation.z);
+
+        if (boostersActive)
+        {
+            rigidBody.AddForce(new Vector3(
+                translation.x,
+                0,
+                translation.z));
+        }
+        else
+        {
+            rigidBody.velocity = new Vector3(
+                translation.x,
+                rigidBody.velocity.y,
+                translation.z);
+        }
 
         if (jumping)
         {
