@@ -13,4 +13,5 @@ MonoBehaviour:
   m_Name: TestVoxelData
   m_EditorClassIdentifier: 
   chunkDimensions: {x: 25, y: 2, z: 25}
-  noiseZoom: 40
+  seed: 888
+  noiseZoom: 50

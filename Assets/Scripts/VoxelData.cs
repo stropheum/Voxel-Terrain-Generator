@@ -9,6 +9,7 @@ using Random = UnityEngine.Random;
 public class VoxelData : ScriptableObject
 {
     [SerializeField] private Vector3Int chunkDimensions = Vector3Int.zero;
+    [SerializeField] private float seed = 0.0f;
     [SerializeField] private float noiseZoom = 1.0f;
     public int[,,] Grid { get; set; }
     public int Width => Grid.GetLength(0);
@@ -78,7 +79,7 @@ public class VoxelData : ScriptableObject
                 for (int z = 0; z < size.z; z++)
                 {
                     var height = 
-                        (int) (Mathf.PerlinNoise(x / noiseZoom, z / noiseZoom) * 
+                        (int) (Mathf.PerlinNoise((seed + x) / noiseZoom, (seed + z) / noiseZoom) * 
                                Grid.GetLength(1));
                     
                     if (y > height)
