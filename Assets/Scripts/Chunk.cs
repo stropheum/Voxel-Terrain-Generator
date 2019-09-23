@@ -67,9 +67,9 @@ public class Chunk : MonoBehaviour
                     }
 
                     var chunkOrigin = new Vector3(
-                                          -Width / 2.0f,
-                                          -Height / 2.0f,
-                                          -Depth / 2.0f);
+                                          -Width * 0.5f,
+                                          -Height * 0.5f,
+                                          -Depth * 0.5f);
 
                     MakeCube(
                         cubeScale: Context.AdjustedScale,

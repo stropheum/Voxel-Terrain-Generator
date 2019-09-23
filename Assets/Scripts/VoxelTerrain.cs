@@ -29,9 +29,9 @@ public class VoxelTerrain : MonoBehaviour
     public Vector3 TerrainOrigin =>
         transform.position - 
         new Vector3(
-            (voxelData.Width * scale) / 2.0f, 
-            (voxelData.Height * scale) / 2.0f,
-            (voxelData.Depth * scale) / 2.0f);
+            (voxelData.Width * scale) * 0.5f, 
+            (voxelData.Height * scale) * 0.5f,
+            (voxelData.Depth * scale) * 0.5f);
 
     public float AdjustedScale { get; private set; }
 
@@ -63,10 +63,15 @@ public class VoxelTerrain : MonoBehaviour
         var voxelIndex = WorldToGridPosition(hit.point + (hit.normal / 2.0f));
         var chunk = GetChunkAtVoxelIndex(voxelIndex);
 
+        if (chunk == null)
+        {
+            return;
+        }
+
         voxelData.Grid[voxelIndex.x, voxelIndex.y, voxelIndex.z] = (int)blockType;
         StartCoroutine(chunk.GenerateVoxelMesh(voxelData));
 
-        // TODO: Actually check if we're bordering a chunk seem rather than doing this naively
+        // TODO: Actually check if we're bordering a chunk seam rather than doing this naively
         var index = IndexOf(chunk, out var found);
         if (index.x > 0)
         {
@@ -104,42 +109,49 @@ public class VoxelTerrain : MonoBehaviour
         var voxelIndex = WorldToGridPosition(hit.point - (hit.normal / 2.0f));
         var chunk = GetChunkAtVoxelIndex(voxelIndex);
 
+        if (chunk == null)
+        {
+            return;
+        }
+
         voxelData.Grid[voxelIndex.x, voxelIndex.y, voxelIndex.z] = 0;
         StartCoroutine(chunk.GenerateVoxelMesh(voxelData));
 
-        // TODO: Actually check if we're bordering a chunk seem rather than doing this naively
+        // TODO: Actually check if we're bordering a chunk seam rather than doing this naively
         var index = IndexOf(chunk, out var found);
-        if (found)
+        if (!found)
         {
-            if (index.x > 0)
-            {
-                StartCoroutine(chunks[index.x - 1, index.y, index.z].GenerateVoxelMesh(voxelData));
-            }
+            return;
+        }
 
-            if (index.x < chunks.GetLength(0) - 1)
-            {
-                StartCoroutine(chunks[index.x + 1, index.y, index.z].GenerateVoxelMesh(voxelData));
-            }
+        if (index.x > 0)
+        {
+            StartCoroutine(chunks[index.x - 1, index.y, index.z].GenerateVoxelMesh(voxelData));
+        }
 
-            if (index.y > 0)
-            {
-                StartCoroutine(chunks[index.x, index.y - 1, index.z].GenerateVoxelMesh(voxelData));
-            }
+        if (index.x < chunks.GetLength(0) - 1)
+        {
+            StartCoroutine(chunks[index.x + 1, index.y, index.z].GenerateVoxelMesh(voxelData));
+        }
 
-            if (index.y < chunks.GetLength(1) - 1)
-            {
-                StartCoroutine(chunks[index.x, index.y + 1, index.z].GenerateVoxelMesh(voxelData));
-            }
+        if (index.y > 0)
+        {
+            StartCoroutine(chunks[index.x, index.y - 1, index.z].GenerateVoxelMesh(voxelData));
+        }
 
-            if (index.z > 0)
-            {
-                StartCoroutine(chunks[index.x, index.y, index.z - 1].GenerateVoxelMesh(voxelData));
-            }
+        if (index.y < chunks.GetLength(1) - 1)
+        {
+            StartCoroutine(chunks[index.x, index.y + 1, index.z].GenerateVoxelMesh(voxelData));
+        }
 
-            if (index.z < chunks.GetLength(2) - 1)
-            {
-                StartCoroutine(chunks[index.x, index.y, index.z + 1].GenerateVoxelMesh(voxelData));
-            }
+        if (index.z > 0)
+        {
+            StartCoroutine(chunks[index.x, index.y, index.z - 1].GenerateVoxelMesh(voxelData));
+        }
+
+        if (index.z < chunks.GetLength(2) - 1)
+        {
+            StartCoroutine(chunks[index.x, index.y, index.z + 1].GenerateVoxelMesh(voxelData));
         }
     }
 
@@ -189,18 +201,25 @@ public class VoxelTerrain : MonoBehaviour
         var result = Vector3Int.zero;
         found = false;
 
+        if (chunk == null)
+        {
+            return result;
+        }
+
         for (int x = 0; x < chunks.GetLength(0); x++)
         {
             for (int y = 0; y < chunks.GetLength(1); y++)
             {
                 for (int z = 0; z < chunks.GetLength(2); z++)
                 {
-                    if (chunk == chunks[x, y, z])
+                    if (chunk != chunks[x, y, z])
                     {
-                        result = new Vector3Int(x, y, z);
-                        found = true;
-                        break;
+                        continue;
                     }
+                    
+                    result = new Vector3Int(x, y, z);
+                    found = true;
+                    break;
                 }
             }
         }
@@ -210,10 +229,23 @@ public class VoxelTerrain : MonoBehaviour
 
     public Chunk GetChunkAtVoxelIndex(Vector3Int voxelIndex)
     {
-        Debug.Assert(
-            voxelIndex.x >= 0 && voxelIndex.x < voxelData.Width &&
-                     voxelIndex.y >= 0 && voxelIndex.y < voxelData.Height &&
-                     voxelIndex.z >= 0 && voxelIndex.z < voxelData.Depth);
+//        Debug.Assert(
+//            voxelIndex.x >= 0 && voxelIndex.x < voxelData.Width &&
+//                     voxelIndex.y >= 0 && voxelIndex.y < voxelData.Height &&
+//                     voxelIndex.z >= 0 && voxelIndex.z < voxelData.Depth);
+
+//        var index = new Vector3Int(
+//            voxelIndex.x / Chunk.Width,
+//            voxelIndex.y / Chunk.Height,
+//            voxelIndex.z / Chunk.Depth);
+
+        if (
+            voxelIndex.x < 0 || voxelIndex.x >= voxelData.Width ||
+            voxelIndex.y < 0 || voxelIndex.y >= voxelData.Height ||
+            voxelIndex.z < 0 || voxelIndex.z >= voxelData.Depth)
+        {
+            return null;
+        }
 
         return chunks[(int)(voxelIndex.x / Chunk.Width), (int)(voxelIndex.y / Chunk.Height), (int)(voxelIndex.z / Chunk.Depth)];
     }
